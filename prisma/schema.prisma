@@ -25,8 +25,9 @@ enum AccountStatus {
   SUSPENDED
 }
 
-model Users {
+model Accounts {
   id                Int           @id @default(autoincrement())
+  accountId         String        @db.VarChar(255)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   name              String        @db.VarChar(255)
@@ -39,24 +40,31 @@ model Users {
   accountStatus     AccountStatus
   slug              String        @unique @db.VarChar(225)
   likes             Likes[]
+  posts             Posts[]
+
+  @@index([accountId])
 }
 
 model Likes {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      Users    @relation(fields: [userId], references: [id])
-  userId    Int
+  accounts  Accounts @relation(fields: [accountId], references: [id])
+  accountId Int
   post      Posts    @relation(fields: [postId], references: [id])
   postId    Int
 }
 
 model Posts {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String   @db.VarChar(255)
-  likes     Likes[]
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  slug        String   @unique @db.VarChar(225)
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  likes       Likes[]
+  accounts    Accounts @relation(fields: [accountId], references: [id])
+  accountId   Int
 }
 
 model Orders {
@@ -68,19 +76,29 @@ model Orders {
 }
 
 model Products {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String   @db.VarChar(255)
-  constellation String   @db.VarChar(255)
+  id                Int               @id @default(autoincrement())
+  slug              String            @unique @db.VarChar(225)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  name              String            @db.VarChar(255)
+  sku               String            @db.VarChar(255)
+  price             Int
+  specialPrice      Int
+  specialQuantity   Int
+  specialEnds       DateTime
+  quantity          Int
+  minimumOrder      Int
+  productCategory   ProductCategories @relation(fields: [productCategoryId], references: [id])
+  productCategoryId Int
 }
 
 model ProductCategories {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String   @db.VarChar(255)
-  constellation String   @db.VarChar(255)
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  name        String     @db.VarChar(255)
+  description String     @db.MediumText
+  products    Products[]
 }
 
 model ProductHistory {
