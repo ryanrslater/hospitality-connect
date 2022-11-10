@@ -25,6 +25,12 @@ enum AccountStatus {
   SUSPENDED
 }
 
+enum OrderStatus {
+  DELIVERED
+  TRANSIT
+  PENDING
+}
+
 model Accounts {
   id                Int           @id @default(autoincrement())
   accountId         String        @db.VarChar(255)
@@ -42,7 +48,7 @@ model Accounts {
   likes             Likes[]
   posts             Posts[]
 
-  @@index([accountId])
+  @@index([accountId, slug])
 }
 
 model Likes {
@@ -68,11 +74,11 @@ model Posts {
 }
 
 model Orders {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String   @db.VarChar(255)
-  constellation String   @db.VarChar(255)
+  id          Int         @id @default(autoincrement())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  name        String      @db.VarChar(255)
+  orderStatus OrderStatus
 }
 
 model Products {
