@@ -29,9 +29,11 @@ enum OrderStatus {
   DELIVERED
   TRANSIT
   PENDING
+  CANCELLED
+  REFUNDED
 }
 
-model Accounts {
+model Account {
   id                Int           @id @default(autoincrement())
   accountId         String        @db.VarChar(255)
   createdAt         DateTime      @default(now())
@@ -45,35 +47,47 @@ model Accounts {
   accountType       AccountType
   accountStatus     AccountStatus
   slug              String        @unique @db.VarChar(225)
-  likes             Likes[]
-  posts             Posts[]
+  likes             Like[]
+  posts             Post[]
+  connections       Connection[]
 
   @@index([accountId, slug])
 }
 
-model Likes {
+model Connection {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  supplierId Int
+  accounts   Account  @relation(fields: [vendorId], references: [id])
+  vendorId   Int
+
+  @@index([vendorId, supplierId])
+}
+
+model Like {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  accounts  Accounts @relation(fields: [accountId], references: [id])
+  accounts  Account  @relation(fields: [accountId], references: [id])
   accountId Int
-  post      Posts    @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
   postId    Int
 }
 
-model Posts {
+model Post {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   slug        String   @unique @db.VarChar(225)
   title       String   @db.VarChar(255)
   description String   @db.Text
-  likes       Likes[]
-  accounts    Accounts @relation(fields: [accountId], references: [id])
+  likes       Like[]
+  accounts    Account  @relation(fields: [accountId], references: [id])
   accountId   Int
 }
 
-model Orders {
+model Order {
   id          Int         @id @default(autoincrement())
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -81,30 +95,30 @@ model Orders {
   orderStatus OrderStatus
 }
 
-model Products {
-  id                Int               @id @default(autoincrement())
-  slug              String            @unique @db.VarChar(225)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  name              String            @db.VarChar(255)
-  sku               String            @db.VarChar(255)
+model Product {
+  id                Int             @id @default(autoincrement())
+  slug              String          @unique @db.VarChar(225)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  name              String          @db.VarChar(255)
+  sku               String          @db.VarChar(255)
   price             Int
   specialPrice      Int
   specialQuantity   Int
   specialEnds       DateTime
   quantity          Int
   minimumOrder      Int
-  productCategory   ProductCategories @relation(fields: [productCategoryId], references: [id])
+  productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
   productCategoryId Int
 }
 
-model ProductCategories {
-  id          Int        @id @default(autoincrement())
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  name        String     @db.VarChar(255)
-  description String     @db.MediumText
-  products    Products[]
+model ProductCategory {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  name        String    @db.VarChar(255)
+  description String    @db.MediumText
+  products    Product[]
 }
 
 model ProductHistory {
@@ -123,7 +137,7 @@ model ShoppingCart {
   constellation String   @db.VarChar(255)
 }
 
-model PageViews {
+model PageView {
   id            Int      @id @default(autoincrement())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -131,10 +145,14 @@ model PageViews {
   constellation String   @db.VarChar(255)
 }
 
-model PageStyles {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  name          String   @db.VarChar(255)
-  constellation String   @db.VarChar(255)
+model PageStyle {
+  id               Int      @id @default(autoincrement())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  name             String   @db.VarChar(255)
+  navbarColour     String   @db.TinyText
+  backgroundColour String   @db.TinyText
+  accentColour     String   @db.TinyText
+  secondaryColour  String   @db.TinyText
+  cardColour       String   @db.TinyText
 }
