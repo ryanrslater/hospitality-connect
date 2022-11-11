@@ -1,6 +1,5 @@
 import NextAuth, {NextAuthOptions} from "next-auth"
 import CognitoProvider from "next-auth/providers/cognito";
-import { PrismaClient, Account } from '@prisma/client'
 
 const {COGNITO_CLIENT_ID, COGNITO_CLIENT_SECRET, COGNITO_ISSUER} = process.env
 

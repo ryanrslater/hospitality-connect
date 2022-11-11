@@ -4,6 +4,7 @@ import { authOptions } from "../pages/api/auth/[...nextauth]"
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export class Auth {
+
     private prisma = new PrismaClient()
 
     async authenticateUser(req: NextApiRequest, res: NextApiResponse): Promise<Account> {
