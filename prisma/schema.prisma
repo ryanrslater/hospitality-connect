@@ -43,6 +43,7 @@ model Account {
   profileImage      String        @db.Text
   coverImage        String        @db.Text
   paymentCustomerId String        @db.VarChar(225)
+  email             String        @db.VarChar(225)
   ABN               String        @db.VarChar(225)
   accountType       AccountType
   accountStatus     AccountStatus
@@ -50,6 +51,7 @@ model Account {
   likes             Like[]
   posts             Post[]
   connections       Connection[]
+  pageStyle         PageStyle?
 
   @@index([accountId, slug])
 }
@@ -155,4 +157,6 @@ model PageStyle {
   accentColour     String   @db.TinyText
   secondaryColour  String   @db.TinyText
   cardColour       String   @db.TinyText
+  account          Account  @relation(fields: [accountId], references: [id])
+  accountId        Int      @unique
 }
