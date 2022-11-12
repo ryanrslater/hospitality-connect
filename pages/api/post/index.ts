@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { PrismaClient, ProductCategory, Prisma } from '@prisma/client'
+import { PrismaClient, Product, Prisma, AccountType, AccountStatus } from '@prisma/client'
 
 
 
@@ -10,23 +10,33 @@ export default async function handler(
 
     if (req.method === "POST") {
 
-        const { name, description }: Prisma.ProductCategoryCreateInput = req.body.data
+        const { slug, title, description } = req.body
+
+        const data: Prisma.PostCreateInput = {
+            slug,
+            title,
+            description,
+            accounts: {
+                connect: { id: 1 }
+            },
+
+        }
 
         const prisma = new PrismaClient()
 
-        const db = await prisma.productCategory.create({ data: { name, description } })
+        const db = await prisma.post.create({ data })
 
         res.status(200).json({ name: 'John Doe' })
     }
     if (req.method === "PATCH") {
 
-        const data: Prisma.ProductUpdateInput = req.body.data
+        const data: Prisma.PostUpdateInput = req.body.data
 
         const id: number = req.body.where
 
         const prisma = new PrismaClient()
 
-        const db = await prisma.productCategory.update({ where: { id }, data })
+        const db = await prisma.post.update({ where: { id }, data })
 
         res.status(200).json({ name: 'John Doe' })
     }
@@ -36,7 +46,7 @@ export default async function handler(
 
         const prisma = new PrismaClient()
 
-        const db = await prisma.productCategory.delete({ where: { id } })
+        const db = await prisma.post.delete({ where: { id } })
 
         res.status(200).json({ name: 'John Doe' })
     }
