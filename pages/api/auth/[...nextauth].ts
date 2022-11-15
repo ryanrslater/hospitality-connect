@@ -1,51 +1,42 @@
-import NextAuth, {NextAuthOptions} from "next-auth"
-import { CognitoIdentityProviderClient, CognitoIdentityProvider, InitiateAuthCommand, AuthFlowType } from "@aws-sdk/client-cognito-identity-provider"
+import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaClient } from ".prisma/client"
-const {COGNITO_CLIENT_ID, COGNITO_CLIENT_SECRET, COGNITO_ISSUER} = process.env
-export const authOptions: NextAuthOptions = {
-  // Configure one or more authentication providers
-  providers: [
-    CredentialsProvider({
-      // The name to display on the sign in form (e.g. 'Sign in with...')
-      name: 'Credentials',
-      // The credentials is used to generate a suitable form on the sign in page.
-      // You can specify whatever fields you are expecting to be submitted.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
-      credentials: {
-        username: { label: "Username", type: "text" },
-        password: {  label: "Password", type: "password" }
-      },
-      async authorize(credentials, req) {
-        const client = new CognitoIdentityProviderClient({region: 'ap-southeast-2'})
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid.
-        // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-        // You can also use the `req` object to obtain additional parameters
-        // (i.e., the request IP address)
-        if (!credentials) throw Error('uh ok')
-        const signIn = await client.send(new InitiateAuthCommand({
-          ClientId: process.env.COGNITO_CLIENT_ID,
-          AuthFlow: AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
-          AuthParameters: {
-            USERNAME: credentials.username,
-            PASSWORD: credentials.password
-          }
-        }))
-        
-        
-        
+import { Auth } from "../../../lib/Auth"
+import { User } from "next-auth"
+export default NextAuth({
+    providers: [
+        CredentialsProvider({
+            // The name to display on the sign in form (e.g. 'Sign in with...')
+            name: 'Credentials',
+            // The credentials is used to generate a suitable form on the sign in page.
+            // You can specify whatever fields you are expecting to be submitted.
+            // e.g. domain, username, password, 2FA token, etc.
+            // You can pass any HTML attribute to the <input> tag through the object.
+            credentials: {
+                username: { label: "Username", type: "text", placeholder: "jsmith" },
+                password: { label: "Password", type: "password" }
+            },
+            async authorize(credentials, req) {
+                // You need to provide your own logic here that takes the credentials
+                // submitted and returns either a object representing a user or value
+                // that is false/null if the credentials are invalid.
+                // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
+                // You can also use the `req` object to obtain additional parameters
+                // (i.e., the request IP address)
 
-        // If no error and we have user data, return it
-  
-        // Return null if user data could not be retrieved
-        return null
-      }
-    })
-  ]
-}
+                const auth = new Auth()
 
+                try {
 
-export default NextAuth(authOptions)
+                    const user = await auth.signIn(credentials)
+                    return user
+                } catch {
+
+                    return null
+                }
+                // If no error and we have user data, return it
+
+                // Return null if user data could not be retrieved
+            }
+        })
+    ]
+})
