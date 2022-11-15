@@ -1,7 +1,7 @@
-import { PrismaClient, Account } from '@prisma/client'
+import { PrismaClient, Account, Prisma } from '@prisma/client'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { User } from "next-auth"
-import { AuthFlowType, CognitoIdentityProvider, InitiateAuthCommandInput, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
+import { AuthFlowType, CognitoIdentityProvider, InitiateAuthCommandInput, SignUpCommandInput, SignUpCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
 
 
 export class Auth {
@@ -9,7 +9,10 @@ export class Auth {
     private prisma = new PrismaClient()
 
     private region = 'ap-southeast-2'
+
     private client = new CognitoIdentityProvider({ region: this.region })
+
+    private clientId = process.env.COGNITO_CLIENT_ID
 
     async signIn(credentials: Record<"username" | "password", string> | undefined): Promise<User> {
 
@@ -19,14 +22,14 @@ export class Auth {
 
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
-            ClientId: process.env.COGNITO_CLIENT_ID,
+            ClientId: this.clientId,
             AuthParameters: {
                 USERNAME: credentials.username,
                 PASSWORD: credentials.password
             }
         }
 
-        const cognito = await this.client.initiateAuth(req)
+        await this.client.initiateAuth(req)
 
         const prisma = new PrismaClient()
 
@@ -46,5 +49,21 @@ export class Auth {
 
         }
         return user
+    }
+
+    async signUp(account: Prisma.AccountCreateInput, password: string | undefined, confirmPassword: string | undefined) {
+        if (!password) throw Error('')
+        if (!confirmPassword) throw Error('')
+        if (password !== confirmPassword) throw Error('')
+
+        const req: SignUpCommandInput = {
+            ClientId: this.clientId,
+            Username: account.accountId,
+            Password: password
+        }
+
+        const cognito = this.client.signUp(req)
+
+
     }
 }
