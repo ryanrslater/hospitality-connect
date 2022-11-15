@@ -68,7 +68,7 @@ export class Auth {
         return user
     }
 
-    async signUp(data: Prisma.AccountCreateInput, password: string | undefined, confirmPassword: string | undefined) {
+    async signUp(data: Account, password: string | undefined, confirmPassword: string | undefined) {
         if (!password) throw Error('')
         if (!confirmPassword) throw Error('')
         if (password !== confirmPassword) throw Error('')
@@ -83,9 +83,37 @@ export class Auth {
 
         if (!cognito.UserSub) throw Error()
 
-        data.accountId = cognito.UserSub
+        const style: Prisma.PageStyleCreateWithoutAccountInput = {
+            name: "",
+            navbarColour: "",
+            backgroundColour: "",
+            accentColour: "",
+            secondaryColour: "",
+            cardColour: "",
+         
+        }
+
+        const acc: Prisma.AccountCreateInput = {
+            accountId: "",
+            name: "",
+            username: "",
+            bio: "",
+            profileImage: "",
+            coverImage: "",
+            paymentCustomerId: "",
+            email: "",
+            ABN: "",
+            accountType: "ADMIN",
+            accountStatus: "PENDING",
+            slug: "",
+            pageStyle: {
+                create: style
+            }
+        }
+
+        acc.accountId = cognito.UserSub
         const db = await this.prisma.account.create({
-            data
+            data: acc
         })
         if (!db) throw Error()
 

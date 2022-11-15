@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { Auth } from '../../../lib/Auth'
-import { Prisma } from '.prisma/client'
+import { Prisma, Account } from '.prisma/client'
 
 export default async function handler(
     req: NextApiRequest,
@@ -9,7 +9,7 @@ export default async function handler(
 ) {
 
     if (req.method !== "POST") return res.status(400).json({ name: 'John Doe' })
-    const account: Prisma.AccountCreateInput = req.body.account
+    const account: Account = req.body.account
     const password = req.body.password
     const confirmPassword = req.body.confirmPassword
     const auth = new Auth()
