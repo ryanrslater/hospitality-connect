@@ -39,6 +39,7 @@ model Account {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   name              String        @db.VarChar(255)
+  username          String        @db.VarChar(255)
   bio               String        @db.Text
   profileImage      String        @db.Text
   coverImage        String        @db.Text

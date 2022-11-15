@@ -3,7 +3,15 @@ import { unstable_getServerSession } from "next-auth/next"
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { authOptions } from '../pages/api/auth/[...nextauth]'
 import { PrismaClient, Account, Prisma } from '@prisma/client'
-import { AuthFlowType, CognitoIdentityProvider, InitiateAuthCommandInput, SignUpCommandInput, SignUpCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
+
+import {
+    AuthFlowType,
+    CognitoIdentityProvider,
+    InitiateAuthCommandInput,
+    SignUpCommandInput,
+    ConfirmSignUpRequest,
+    ConfirmSignUpCommandOutput
+} from '@aws-sdk/client-cognito-identity-provider'
 
 export class Auth {
 
@@ -32,7 +40,7 @@ export class Auth {
 
         const db = await this.prisma.account.findFirst({
             where: {
-                email: credentials.username
+                username: credentials.username
             }
         })
 
@@ -89,5 +97,19 @@ export class Auth {
         if (!db) throw Error()
 
         return db
+    }
+
+    async confirmAccount(username: string, code: string): Promise<ConfirmSignUpCommandOutput> {
+        const req: ConfirmSignUpRequest = {
+            ClientId: this.clientId,
+            Username: username,
+            ConfirmationCode: code
+        }
+
+        const cognito = await this.client.confirmSignUp(req).then(res => res)
+
+        if (!cognito) throw Error()
+
+        return cognito
     }
 }
