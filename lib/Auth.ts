@@ -2,8 +2,8 @@ import { PrismaClient, Account, Prisma } from '@prisma/client'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { User } from "next-auth"
 import { AuthFlowType, CognitoIdentityProvider, InitiateAuthCommandInput, SignUpCommandInput, SignUpCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
-
-
+import { authOptions } from '../pages/api/auth/[...nextauth]'
+import { unstable_getServerSession } from "next-auth/next"
 export class Auth {
 
     private prisma = new PrismaClient()
@@ -65,5 +65,24 @@ export class Auth {
         const cognito = this.client.signUp(req)
 
 
+    }
+
+    async authenticate(req: NextApiRequest, res: NextApiResponse): Promise<Account> {
+        const session = await unstable_getServerSession(req, res, authOptions)
+
+        if (!session || !session.user) throw Error()
+
+        if (!session.user.email) throw Error()
+
+        const prisma = new PrismaClient()
+
+        const db = await prisma.account.findFirst({
+            where: {
+                email: session.user.email
+            }
+        })
+        if (!db) throw Error()
+
+        return db
     }
 }

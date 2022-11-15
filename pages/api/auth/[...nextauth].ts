@@ -2,7 +2,8 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { Auth } from "../../../lib/Auth"
 import { User } from "next-auth"
-export default NextAuth({
+import type { NextAuthOptions } from 'next-auth'
+export const authOptions: NextAuthOptions ={
     providers: [
         CredentialsProvider({
             // The name to display on the sign in form (e.g. 'Sign in with...')
@@ -39,4 +40,6 @@ export default NextAuth({
             }
         })
     ]
-})
+}
+
+export default NextAuth(authOptions);
