@@ -1,9 +1,10 @@
-import { PrismaClient, Account, Prisma } from '@prisma/client'
-import type { NextApiRequest, NextApiResponse } from 'next'
 import { User } from "next-auth"
-import { AuthFlowType, CognitoIdentityProvider, InitiateAuthCommandInput, SignUpCommandInput, SignUpCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
-import { authOptions } from '../pages/api/auth/[...nextauth]'
 import { unstable_getServerSession } from "next-auth/next"
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { authOptions } from '../pages/api/auth/[...nextauth]'
+import { PrismaClient, Account, Prisma } from '@prisma/client'
+import { AuthFlowType, CognitoIdentityProvider, InitiateAuthCommandInput, SignUpCommandInput, SignUpCommandOutput } from '@aws-sdk/client-cognito-identity-provider'
+
 export class Auth {
 
     private prisma = new PrismaClient()
@@ -18,8 +19,6 @@ export class Auth {
 
         if (!credentials) throw Error('uh ok')
 
-
-
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
             ClientId: this.clientId,
@@ -31,9 +30,7 @@ export class Auth {
 
         await this.client.initiateAuth(req)
 
-        const prisma = new PrismaClient()
-
-        const db = await prisma.account.findFirst({
+        const db = await this.prisma.account.findFirst({
             where: {
                 email: credentials.username
             }
@@ -51,20 +48,28 @@ export class Auth {
         return user
     }
 
-    async signUp(account: Prisma.AccountCreateInput, password: string | undefined, confirmPassword: string | undefined) {
+    async signUp(data: Prisma.AccountCreateInput, password: string | undefined, confirmPassword: string | undefined) {
         if (!password) throw Error('')
         if (!confirmPassword) throw Error('')
         if (password !== confirmPassword) throw Error('')
 
         const req: SignUpCommandInput = {
             ClientId: this.clientId,
-            Username: account.accountId,
+            Username: data.accountId,
             Password: password
         }
 
-        const cognito = this.client.signUp(req)
+        const cognito = await this.client.signUp(req).then(res => res)
 
+        if (!cognito.UserSub) throw Error()
 
+        data.accountId = cognito.UserSub
+        const db = await this.prisma.account.create({
+            data
+        })
+        if (!db) throw Error()
+
+        return db
     }
 
     async authenticate(req: NextApiRequest, res: NextApiResponse): Promise<Account> {
