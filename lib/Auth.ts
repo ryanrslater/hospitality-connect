@@ -10,7 +10,7 @@ import {
     InitiateAuthCommandInput,
     SignUpCommandInput,
     ConfirmSignUpRequest,
-    ConfirmSignUpCommandOutput
+    ConfirmSignUpCommandOutput, CognitoIdentityProviderClientConfig
 } from '@aws-sdk/client-cognito-identity-provider'
 
 export class Auth {
@@ -19,9 +19,21 @@ export class Auth {
 
     private region = 'ap-southeast-2'
 
-    private client = new CognitoIdentityProvider({ region: this.region })
+    private client;
 
     private clientId = process.env.COGNITO_CLIENT_ID
+
+    constructor() {
+        if (!process.env.ACCESS_KEY_ID) throw Error()
+        if (!process.env.SECRET_ACCESS_KEY) throw Error()
+
+        this.client = new CognitoIdentityProvider({
+            region: this.region, credentials: {
+                accessKeyId: process.env.ACCESS_KEY_ID,
+                secretAccessKey: process.env.SECRET_ACCESS_KEY
+            }
+        })
+    }
 
     async signIn(credentials: Record<"username" | "password", string> | undefined): Promise<User> {
 
