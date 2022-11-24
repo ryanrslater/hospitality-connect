@@ -2,4 +2,19 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
+    padding: 20px 30px;
 }
+
+.links {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .wrapper {
+        border-bottom: 1px solid white;
+    }
+  }
+  
