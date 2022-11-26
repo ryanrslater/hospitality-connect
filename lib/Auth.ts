@@ -71,8 +71,9 @@ export class Auth {
         return user
     }
 
-    async signUp(username: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<SignUpCommandOutput> {
+    async signUp(username: string | undefined, email: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<SignUpCommandOutput> {
         if (!username) throw Error('no username')
+        if (!email) throw Error('no email')
         if (!password) throw Error('no password')
         if (!confirmPassword) throw Error('no confirm password')
         if (password !== confirmPassword) throw Error('passwords do not match')
@@ -82,7 +83,7 @@ export class Auth {
             UserAttributes: [ 
                 { 
                    "Name": "email",
-                   "Value": "string@string.com"
+                   "Value": email
                 }
              ],
             Username: username,
