@@ -4,5 +4,24 @@
 }
 
 .sidebar {
-    width: 500px
+    width: 400px
 }
+
+.centerContent {
+    flex-basis: 50%;
+    display: flex;
+    justify-content: center;
+}
+
+.posts {
+    border: 1px solid black;
+    padding: 15px;
+
+}
+
+@media (prefers-color-scheme: dark) {
+    .posts {
+        border: 1px solid white;
+    }
+  }
+  

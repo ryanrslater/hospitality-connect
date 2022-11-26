@@ -9,12 +9,14 @@ const LoggedIn = () => {
             <Navbar />
             <div className={styles.content}>
                 <div className={styles.sidebar}>
-                <Sidebar />
+                    <Sidebar />
                 </div>
-                <div>
-                <Posts />
+                <div className={styles.centerContent}>
+
+                    <div className={styles.posts}>
+                        <Posts />
+                    </div>
                 </div>
-               
             </div>
         </div>
     )
