@@ -24,13 +24,15 @@ export class Auth {
     private clientId = process.env.COGNITO_CLIENT_ID
 
     constructor() {
-        if (!process.env.ACCESS_KEY_ID) throw Error()
-        if (!process.env.SECRET_ACCESS_KEY) throw Error()
+        if (!process.env.ACCESS_KEY_ID) throw Error('missing access key')
+        if (!process.env.SECRET_ACCESS_KEY) throw Error('missing secret key')
 
         this.client = new CognitoIdentityProvider({
-            region: this.region, credentials: {
+            region: this.region, 
+            credentials: {
                 accessKeyId: process.env.ACCESS_KEY_ID,
-                secretAccessKey: process.env.SECRET_ACCESS_KEY
+                secretAccessKey: process.env.SECRET_ACCESS_KEY,
+                
             }
         })
     }
@@ -42,6 +44,7 @@ export class Auth {
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
             ClientId: this.clientId,
+      
             AuthParameters: {
                 USERNAME: credentials.username,
                 PASSWORD: credentials.password
@@ -69,19 +72,25 @@ export class Auth {
     }
 
     async signUp(username: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<SignUpCommandOutput> {
-        if (!username) throw Error('')
-        if (!password) throw Error('')
-        if (!confirmPassword) throw Error('')
-        if (password !== confirmPassword) throw Error('')
+        if (!username) throw Error('no username')
+        if (!password) throw Error('no password')
+        if (!confirmPassword) throw Error('no confirm password')
+        if (password !== confirmPassword) throw Error('passwords do not match')
 
         const req: SignUpCommandInput = {
             ClientId: this.clientId,
+            UserAttributes: [ 
+                { 
+                   "Name": "email",
+                   "Value": "string@string.com"
+                }
+             ],
             Username: username,
             Password: password
         }
 
         const cognito = await this.client.signUp(req).then(res => res)
-
+        console.log(cognito)
         if (!cognito.UserSub) throw Error()
 
         return cognito
