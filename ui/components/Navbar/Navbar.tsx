@@ -7,9 +7,9 @@ const Navbar = () => {
                 Navbar
             </div>
             <div className={styles.links}>
-                <p>link</p>
-                <p>link</p>
-                <p>link</p>
+                <p>Chat</p>
+                <p>Notifications</p>
+                <p>Logout</p>
             </div>
 
         </div>
