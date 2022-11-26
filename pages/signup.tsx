@@ -1,10 +1,14 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Signup.module.css'
-
+import React, {useState} from 'react'
 
 
 const Signup = () => {
+  const [username, setUsername] = useState<string>('')
+  const [password, setPassword]= useState<string>('')
+  const [confirmPassword, setConfirmPassword] = useState<string>('')
+  
   return (
     <div className={styles.container}>
       <Head>

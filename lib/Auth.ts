@@ -9,7 +9,7 @@ import {
     CognitoIdentityProvider,
     InitiateAuthCommandInput,
     SignUpCommandInput,
-    ConfirmSignUpRequest,
+    ConfirmSignUpRequest, SignUpCommandOutput,
     ConfirmSignUpCommandOutput, CognitoIdentityProviderClientConfig
 } from '@aws-sdk/client-cognito-identity-provider'
 
@@ -68,14 +68,15 @@ export class Auth {
         return user
     }
 
-    async signUp(data: Account, password: string | undefined, confirmPassword: string | undefined) {
+    async signUp(username: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<SignUpCommandOutput> {
+        if (!username) throw Error('')
         if (!password) throw Error('')
         if (!confirmPassword) throw Error('')
         if (password !== confirmPassword) throw Error('')
 
         const req: SignUpCommandInput = {
             ClientId: this.clientId,
-            Username: data.accountId,
+            Username: username,
             Password: password
         }
 
@@ -83,41 +84,7 @@ export class Auth {
 
         if (!cognito.UserSub) throw Error()
 
-        const style: Prisma.PageStyleCreateWithoutAccountInput = {
-            name: "",
-            navbarColour: "",
-            backgroundColour: "",
-            accentColour: "",
-            secondaryColour: "",
-            cardColour: "",
-         
-        }
-
-        const acc: Prisma.AccountCreateInput = {
-            accountId: "",
-            name: "",
-            username: "",
-            bio: "",
-            profileImage: "",
-            coverImage: "",
-            paymentCustomerId: "",
-            email: "",
-            ABN: "",
-            accountType: "ADMIN",
-            accountStatus: "PENDING",
-            slug: "",
-            pageStyle: {
-                create: style
-            }
-        }
-
-        acc.accountId = cognito.UserSub
-        const db = await this.prisma.account.create({
-            data: acc
-        })
-        if (!db) throw Error()
-
-        return db
+        return cognito
     }
 
     async authenticate(req: NextApiRequest, res: NextApiResponse): Promise<Account> {
