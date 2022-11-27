@@ -26,3 +26,9 @@
     display: flex;
     justify-content: center;
 }
+
+.successMessage {
+    margin: 15% auto;
+    width: 500px;
+    text-align: center;
+}

@@ -64,7 +64,12 @@ const Signup = () => {
         }
       </div>
         :
-        <div>hi</div>
+        <div className={styles.successMessage}>
+          <h2>
+            Success!
+          </h2>
+          <p>Please check your emails to verify your account and complete signup</p>
+        </div>
       }
     </div>
   )
