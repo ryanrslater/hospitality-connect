@@ -1,8 +1,10 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { User } from "next-auth"
 import { Auth } from "../../../lib/Auth"
 import type { NextAuthOptions } from 'next-auth'
-export const authOptions: NextAuthOptions ={
+import { ChallengeResponse, ChallengeResponseType } from "@aws-sdk/client-cognito-identity-provider"
+export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
             // The name to display on the sign in form (e.g. 'Sign in with...')
@@ -15,43 +17,38 @@ export const authOptions: NextAuthOptions ={
                 username: { label: "Username", type: "text", placeholder: "jsmith" },
                 password: { label: "Password", type: "password" }
             },
-            async authorize(credentials, req) {
-                // You need to provide your own logic here that takes the credentials
-                // submitted and returns either a object representing a user or value
-                // that is false/null if the credentials are invalid.
-                // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-                // You can also use the `req` object to obtain additional parameters
-                // (i.e., the request IP address)
+            async authorize(credentials, req): Promise<any> {
 
                 const auth = new Auth()
-
+                let authenticateUser
                 try {
+                    authenticateUser = await auth.signIn(credentials)
+                } catch (err: any) {
+                    return {
+                        name: credentials?.username,
+                        challenge: err.name
+                    }
 
-                    const user = await auth.signIn(credentials)
-                    console.log("user", user)
-                    return user
-                } catch (e) {
-                    console.log(e)
-                    return null
                 }
-                // If no error and we have user data, return it
 
-                // Return null if user data could not be retrieved
+                console.log("authenticateUser", authenticateUser)
+
+                return authenticateUser
             }
         })
     ],
     callbacks: {
         async jwt({ token, account, profile }) {
-            console.log("account", account)
-          
-          // Persist the OAuth access_token and or the user id to the token right after signin
-          if (account) {
-            token.accessToken = account.access_token
-            token.id = profile.id
-          }
-          return token
+            console.log("token", token)
+
+            // Persist the OAuth access_token and or the user id to the token right after signin
+            if (account) {
+
+
+            }
+            return token
         }
-      }
+    }
 }
 
 export default NextAuth(authOptions);

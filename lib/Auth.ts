@@ -14,7 +14,7 @@ import {
     InitiateAuthCommandOutput,
     ConfirmSignUpCommandOutput,
     GetUserCommandInput,
-    GetUserCommandOutput
+    GetUserCommandOutput,
 } from '@aws-sdk/client-cognito-identity-provider'
 
 export class Auth {
@@ -41,9 +41,9 @@ export class Auth {
         })
     }
 
-    async signIn(credentials: Record<"username" | "password", string> | undefined): Promise<User> {
+    async signIn(credentials: Record<"username" | "password", string> | undefined): Promise<InitiateAuthCommandOutput> {
 
-        if (!credentials) throw Error('uh ok')
+        if (!credentials) throw Error()
 
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
@@ -56,8 +56,14 @@ export class Auth {
 
         const auth: InitiateAuthCommandOutput = await this.client.initiateAuth(req)
 
+        return auth
+    }
+
+    async getUser(AccessToken: string | undefined): Promise<User | null> {
+        if (!AccessToken) return null
+
         const userReq: GetUserCommandInput = {
-            AccessToken: auth.AuthenticationResult?.AccessToken
+            AccessToken
         }
 
         const user: GetUserCommandOutput = await this.client.getUser(userReq)
@@ -72,7 +78,7 @@ export class Auth {
         const res: User = {
             id: sub.Value,
             name: user.Username,
-            email: email.Value
+            email: email.Value,
         }
 
         return res

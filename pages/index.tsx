@@ -25,7 +25,7 @@ export default Home
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const auth = new Auth()
   const session = await auth.authenticate(context.req, context.res)
-  console.log(session)
+  
   if (!session) {
     return {
       props: {
