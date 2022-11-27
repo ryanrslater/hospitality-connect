@@ -69,16 +69,10 @@ export class Auth {
         const user: GetUserCommandOutput = await this.client.getUser(userReq)
         if (!user.UserAttributes) throw Error()
      
-        const sub = user.UserAttributes.find(e => e.Name === "sub")
-        if (!sub || !sub.Value) throw Error()
-
-        const email = user.UserAttributes.find(e => e.Name === "email")
-        if (!email || !email.Value) throw Error()
+        if (!user.Username) return null
 
         const res: User = {
-            id: sub.Value,
-            name: user.Username,
-            email: email.Value,
+            id: user.Username,
         }
 
         return res

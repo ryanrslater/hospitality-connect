@@ -18,37 +18,22 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials, req): Promise<any> {
-
                 const auth = new Auth()
-                let authenticateUser
+
                 try {
-                    authenticateUser = await auth.signIn(credentials)
+                    const authenticateUser = await auth.signIn(credentials)
+                    const user = await auth.getUser(authenticateUser.AuthenticationResult?.AccessToken)
+                    return user
                 } catch (err: any) {
+                    console.log(err)
                     return {
-                        name: credentials?.username,
-                        challenge: err.name
+                        id: credentials?.username,
+                        error: err.name
                     }
-
                 }
-
-                console.log("authenticateUser", authenticateUser)
-
-                return authenticateUser
             }
         })
-    ],
-    callbacks: {
-        async jwt({ token, account, profile }) {
-            console.log("token", token)
-
-            // Persist the OAuth access_token and or the user id to the token right after signin
-            if (account) {
-
-
-            }
-            return token
-        }
-    }
+    ]
 }
 
 export default NextAuth(authOptions);
