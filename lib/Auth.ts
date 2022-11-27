@@ -98,7 +98,7 @@ export class Auth {
         }
 
         const cognito = await this.client.signUp(req).then(res => res)
-        console.log(cognito)
+
         if (!cognito.UserSub) throw Error()
 
 
@@ -108,10 +108,10 @@ export class Auth {
 
     async authenticate(req: GetServerSidePropsContext['req'], res: GetServerSidePropsContext['res']): Promise<typeof session> {
         const session = await unstable_getServerSession(req, res, authOptions)
+     
+        if (!session || !session.user) return null
 
-        if (!session || !session.user) throw Error()
-
-        if (!session.user.email) throw Error()
+        if (!session.user.email) return null
 
 
         return session

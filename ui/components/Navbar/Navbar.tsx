@@ -1,6 +1,11 @@
 import React from "react";
 import styles from './Navbar.module.css'
+import { signOut } from "next-auth/react";
+
 const Navbar = () => {
+    const logoutHandler = async () => {
+        await signOut()
+    }
     return (
         <div className={styles.wrapper}>
             <div>
@@ -9,7 +14,7 @@ const Navbar = () => {
             <div className={styles.links}>
                 <p>Chat</p>
                 <p>Notifications</p>
-                <p>Logout</p>
+                <p onClick={logoutHandler}>Logout</p>
             </div>
 
         </div>

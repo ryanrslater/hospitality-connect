@@ -28,6 +28,7 @@ export const authOptions: NextAuthOptions ={
                 try {
 
                     const user = await auth.signIn(credentials)
+                    console.log("user", user)
                     return user
                 } catch (e) {
                     console.log(e)
@@ -38,7 +39,19 @@ export const authOptions: NextAuthOptions ={
                 // Return null if user data could not be retrieved
             }
         })
-    ]
+    ],
+    callbacks: {
+        async jwt({ token, account, profile }) {
+            console.log("account", account)
+          
+          // Persist the OAuth access_token and or the user id to the token right after signin
+          if (account) {
+            token.accessToken = account.access_token
+            token.id = profile.id
+          }
+          return token
+        }
+      }
 }
 
 export default NextAuth(authOptions);

@@ -2,10 +2,11 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import LoggedIn from '../ui/layouts/index/LoggedIn'
-import { GetServerSidePropsContext } from 'next'
+import { GetServerSidePropsContext, NextPage } from 'next'
 import { Auth } from '../lib/Auth'
+import { PageProps } from '../types/PageProps'
 
-export default function Home() {
+const Home: NextPage<PageProps> = ({ signedIn }) => {
   return (
     <div className={styles.container}>
       <Head>
@@ -19,8 +20,23 @@ export default function Home() {
   )
 }
 
+export default Home
+
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const auth = new Auth()
   const session = await auth.authenticate(context.req, context.res)
   console.log(session)
+  if (!session) {
+    return {
+      props: {
+        signedIn: false
+      }
+    }
+  }
+  return {
+    props: {
+      signedIn: true
+    }
+  }
+
 }
