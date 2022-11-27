@@ -29,8 +29,8 @@ export const authOptions: NextAuthOptions ={
 
                     const user = await auth.signIn(credentials)
                     return user
-                } catch {
-
+                } catch (e) {
+                    console.log(e)
                     return null
                 }
                 // If no error and we have user data, return it

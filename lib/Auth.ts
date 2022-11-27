@@ -1,6 +1,6 @@
 import { User } from "next-auth"
 import session, { unstable_getServerSession } from "next-auth/next"
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse, GetServerSidePropsContext } from 'next'
 import { authOptions } from '../pages/api/auth/[...nextauth]'
 import { PrismaClient, Account, Prisma } from '@prisma/client'
 
@@ -9,8 +9,12 @@ import {
     CognitoIdentityProvider,
     InitiateAuthCommandInput,
     SignUpCommandInput,
-    ConfirmSignUpRequest, SignUpCommandOutput, InitiateAuthCommandOutput,
-    ConfirmSignUpCommandOutput, CognitoIdentityProviderClientConfig
+    ConfirmSignUpRequest,
+    SignUpCommandOutput,
+    InitiateAuthCommandOutput,
+    ConfirmSignUpCommandOutput,
+    GetUserCommandInput,
+    GetUserCommandOutput
 } from '@aws-sdk/client-cognito-identity-provider'
 
 export class Auth {
@@ -44,7 +48,6 @@ export class Auth {
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
             ClientId: this.clientId,
-
             AuthParameters: {
                 USERNAME: credentials.username,
                 PASSWORD: credentials.password
@@ -52,10 +55,24 @@ export class Auth {
         }
 
         const auth: InitiateAuthCommandOutput = await this.client.initiateAuth(req)
-        
+
+        const userReq: GetUserCommandInput = {
+            AccessToken: auth.AuthenticationResult?.AccessToken
+        }
+
+        const user: GetUserCommandOutput = await this.client.getUser(userReq)
+        if (!user.UserAttributes) throw Error()
+     
+        const sub = user.UserAttributes.find(e => e.Name === "sub")
+        if (!sub || !sub.Value) throw Error()
+
+        const email = user.UserAttributes.find(e => e.Name === "email")
+        if (!email || !email.Value) throw Error()
+
         const res: User = {
-            id: '1',
-            
+            id: sub.Value,
+            name: user.Username,
+            email: email.Value
         }
 
         return res
@@ -84,12 +101,12 @@ export class Auth {
         console.log(cognito)
         if (!cognito.UserSub) throw Error()
 
-     
+
 
         return cognito
     }
 
-    async authenticate(req: NextApiRequest, res: NextApiResponse): Promise<typeof session> {
+    async authenticate(req: GetServerSidePropsContext['req'], res: GetServerSidePropsContext['res']): Promise<typeof session> {
         const session = await unstable_getServerSession(req, res, authOptions)
 
         if (!session || !session.user) throw Error()

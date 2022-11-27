@@ -2,7 +2,8 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import LoggedIn from '../ui/layouts/index/LoggedIn'
-
+import { GetServerSidePropsContext } from 'next'
+import { Auth } from '../lib/Auth'
 
 export default function Home() {
   return (
@@ -16,4 +17,10 @@ export default function Home() {
       <LoggedIn />
     </div>
   )
+}
+
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const auth = new Auth()
+  const session = await auth.authenticate(context.req, context.res)
+  console.log(session)
 }
