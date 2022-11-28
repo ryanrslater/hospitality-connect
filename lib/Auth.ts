@@ -44,7 +44,7 @@ export class Auth {
     async signIn(credentials: Record<"username" | "password", string> | undefined): Promise<InitiateAuthCommandOutput> {
 
         if (!credentials) throw Error()
-
+this.client.cr
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
             ClientId: this.clientId,

@@ -20,17 +20,15 @@ export const authOptions: NextAuthOptions = {
             async authorize(credentials, req): Promise<any> {
                 const auth = new Auth()
 
-                try {
-                    const authenticateUser = await auth.signIn(credentials)
-                    const user = await auth.getUser(authenticateUser.AuthenticationResult?.AccessToken)
-                    return user
-                } catch (err: any) {
-                    console.log(err)
-                    return {
-                        id: credentials?.username,
-                        error: err.name
-                    }
+            
+                const authenticateUser = await auth.signIn(credentials)
+                const getUser = await auth.getUser(authenticateUser.AuthenticationResult?.AccessToken)
+                console.log("getUser", getUser)
+                const user = {
+                    id: credentials?.username
                 }
+                return user
+                
             }
         })
     ]
