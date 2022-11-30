@@ -16,6 +16,12 @@ import {
     GetUserCommandOutput,
 } from '@aws-sdk/client-cognito-identity-provider'
 
+type AuthRes = {
+    sub: string | null;
+    challenge: string | null;
+    error: string | null
+}
+
 export class Auth {
 
     private prisma = new PrismaClient()
@@ -40,7 +46,7 @@ export class Auth {
         })
     }
 
-    async signIn(username: string | undefined, password: string | undefined, res: NextApiResponse): Promise<InitiateAuthCommandOutput> {
+    async signIn(username: string | undefined, password: string | undefined, res: NextApiResponse): Promise<AuthRes> {
 
         if (!username || !password) throw Error('no username')
 
@@ -54,24 +60,28 @@ export class Auth {
         }
 
         const auth: InitiateAuthCommandOutput = await this.client.initiateAuth(req)
+
+
+
         if (!auth.AuthenticationResult?.AccessToken || !auth.AuthenticationResult.ExpiresIn) throw Error()
 
 
         const date = new Date()
 
         const cookieOptions: CookieSerializeOptions = {
-            expires: new Date(date.setSeconds(date.getSeconds() + auth.AuthenticationResult.ExpiresIn )),
+            expires: new Date(date.setSeconds(date.getSeconds() + auth.AuthenticationResult.ExpiresIn)),
             httpOnly: true,
             path: '/',
             sameSite: 'lax',
+            secure: process.env.VERCEL_ENV === 'production'
         }
 
         res.setHeader('Set-Cookie', cookie.serialize('test-token', auth.AuthenticationResult.AccessToken, cookieOptions))
-       
+
         return auth
     }
 
-    async getUser(req: NextApiRequest): Promise<null> {
+    async getUser(req: NextApiRequest): Promise<AuthRes | null> {
         var cookies = cookie.parse(req.headers.cookie || '');
 
         // Get the visitor name set in the cookie
@@ -86,7 +96,7 @@ export class Auth {
         return null
     }
 
-    async signUp(username: string | undefined, email: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<SignUpCommandOutput> {
+    async signUp(username: string | undefined, email: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<AuthRes> {
         if (!username) throw Error('no username')
         if (!email) throw Error('no email')
         if (!password) throw Error('no password')
