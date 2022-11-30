@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { signIn } from "next-auth/react"
 
 const Login = () => {
     const [username, setUsername] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const submitHandler = async (e: any) => {
         e.preventDefault()
-        const user = await signIn('credentials', {
-            username,
-            password
+        const user = await fetch('/api/auth/signin', {
+            method: 'POST',
+            body: JSON.stringify({
+                username,
+                password
+            })
         })
     }
     return (

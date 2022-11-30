@@ -1,8 +1,7 @@
-import { User } from "next-auth"
-import session, { unstable_getServerSession } from "next-auth/next"
 import type { NextApiRequest, NextApiResponse, GetServerSidePropsContext } from 'next'
-import { authOptions } from '../pages/api/auth/[...nextauth]'
 import { PrismaClient, Account, Prisma } from '@prisma/client'
+import type { CookieSerializeOptions } from "cookie";
+import cookie from "cookie";
 
 import {
     AuthFlowType,
@@ -41,41 +40,50 @@ export class Auth {
         })
     }
 
-    async signIn(credentials: Record<"username" | "password", string> | undefined): Promise<InitiateAuthCommandOutput> {
+    async signIn(username: string | undefined, password: string | undefined, res: NextApiResponse): Promise<InitiateAuthCommandOutput> {
 
-        if (!credentials) throw Error()
-this.client.cr
+        if (!username || !password) throw Error('no username')
+
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
             ClientId: this.clientId,
             AuthParameters: {
-                USERNAME: credentials.username,
-                PASSWORD: credentials.password
+                USERNAME: username,
+                PASSWORD: password
             }
         }
 
         const auth: InitiateAuthCommandOutput = await this.client.initiateAuth(req)
+        if (!auth.AuthenticationResult?.AccessToken || !auth.AuthenticationResult.ExpiresIn) throw Error()
 
+
+        const date = new Date()
+
+        const cookieOptions: CookieSerializeOptions = {
+            expires: new Date(date.setSeconds(date.getSeconds() + auth.AuthenticationResult.ExpiresIn )),
+            httpOnly: true,
+            path: '/',
+            sameSite: 'lax',
+        }
+
+        res.setHeader('Set-Cookie', cookie.serialize('test-token', auth.AuthenticationResult.AccessToken, cookieOptions))
+       
         return auth
     }
 
-    async getUser(AccessToken: string | undefined): Promise<User | null> {
-        if (!AccessToken) return null
+    async getUser(req: NextApiRequest): Promise<null> {
+        var cookies = cookie.parse(req.headers.cookie || '');
 
-        const userReq: GetUserCommandInput = {
-            AccessToken
+        // Get the visitor name set in the cookie
+        var name = cookies['test-token'];
+
+        const token: GetUserCommandInput = {
+            AccessToken: name
         }
 
-        const user: GetUserCommandOutput = await this.client.getUser(userReq)
-        if (!user.UserAttributes) throw Error()
-     
-        if (!user.Username) return null
-
-        const res: User = {
-            id: user.Username,
-        }
-
-        return res
+        const user = await this.client.getUser(token).then(res => res)
+        console.log(user)
+        return null
     }
 
     async signUp(username: string | undefined, email: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<SignUpCommandOutput> {
@@ -101,21 +109,9 @@ this.client.cr
 
         if (!cognito.UserSub) throw Error()
 
-
-
         return cognito
     }
 
-    async authenticate(req: GetServerSidePropsContext['req'], res: GetServerSidePropsContext['res']): Promise<typeof session> {
-        const session = await unstable_getServerSession(req, res, authOptions)
-     
-        if (!session || !session.user) return null
-
-        if (!session.user.email) return null
-
-
-        return session
-    }
 
     async confirmAccount(username: string, code: string): Promise<ConfirmSignUpCommandOutput> {
         const req: ConfirmSignUpRequest = {
