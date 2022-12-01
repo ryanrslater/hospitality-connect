@@ -24,15 +24,16 @@ export default Home
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const auth = new Auth()
-  const session = await auth.getUser(context.req)
-  console.log(session)
-  if (!session) {
+  const user = await auth.getUser(context)
+ 
+  if (!user || !user.sub) {
     return {
       props: {
         signedIn: false
       }
     }
   }
+
   return {
     props: {
       signedIn: true

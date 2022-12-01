@@ -9,7 +9,7 @@ export default async function handler(
    const auth = new Auth()
    const body = JSON.parse(req.body)
   
-    const user = await auth.signIn(body.username, body.password, req, res) 
+    const user = await auth.signIn(body.username, body.password, res) 
   
   res.status(200).json({ name: 'John Doe' })
   return res

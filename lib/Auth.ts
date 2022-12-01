@@ -43,7 +43,7 @@ export class Auth {
         })
     }
 
-    async signIn(username: string | undefined, password: string | undefined, req: NextApiRequest, res: NextApiResponse): Promise<AuthRes> {
+    async signIn(username: string | undefined, password: string | undefined, res: NextApiResponse): Promise<AuthRes> {
 
         if (!username || !password) return { error: 'missing creds', sub: null, challenge: null }
 
@@ -102,8 +102,14 @@ export class Auth {
         }
 
         const user = await this.client.getUser(token).then(res => res)
+
+        const sub = user.UserAttributes?.find(e => e.Name == "sub")
      
-        return null
+        return {
+            sub: sub?.Value || null,
+            error: null,
+            challenge: null
+        }
     }
 
     async signUp(username: string | undefined, email: string | undefined, password: string | undefined, confirmPassword: string | undefined): Promise<AuthRes> {
