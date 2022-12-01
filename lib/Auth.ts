@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse, GetServerSidePropsContext } from 'next'
-import { PrismaClient, Account, Prisma } from '@prisma/client'
 import type { CookieSerializeOptions } from "cookie";
 import cookie from "cookie";
 
@@ -24,8 +23,6 @@ type AuthRes = {
 
 export class Auth {
 
-    private prisma = new PrismaClient()
-
     private region = 'ap-southeast-2'
 
     private client;
@@ -48,7 +45,7 @@ export class Auth {
 
     async signIn(username: string | undefined, password: string | undefined, res: NextApiResponse): Promise<AuthRes> {
 
-        if (!username || !password) throw Error('no username')
+        if (!username || !password) return {error: 'missing creds', sub: null, challenge: null}
 
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
@@ -59,11 +56,16 @@ export class Auth {
             }
         }
 
-        const auth: InitiateAuthCommandOutput = await this.client.initiateAuth(req)
+        let auth: InitiateAuthCommandOutput
 
+        try {
+            auth = await this.client.initiateAuth(req)
+        } catch (e: any) {
+            if (e.code == "UserNotConfirmedException") return {error: null, sub: null, challenge: 'UserNotConfirmedException'}
+            return {error: e.code, sub: null, challenge: null}   
+        }
 
-
-        if (!auth.AuthenticationResult?.AccessToken || !auth.AuthenticationResult.ExpiresIn) throw Error()
+        if (!auth.AuthenticationResult?.AccessToken || !auth.AuthenticationResult.ExpiresIn) return {error: "No token", sub: null, challenge: null}
 
 
         const date = new Date()
@@ -76,16 +78,26 @@ export class Auth {
             secure: process.env.VERCEL_ENV === 'production'
         }
 
-        res.setHeader('Set-Cookie', cookie.serialize('test-token', auth.AuthenticationResult.AccessToken, cookieOptions))
+        res.setHeader('Set-Cookie', cookie.serialize('hospo-token', auth.AuthenticationResult.AccessToken, cookieOptions))
 
-        return auth
+        const token: GetUserCommandInput = {
+            AccessToken: auth.AuthenticationResult.AccessToken
+        }
+
+        const user = await this.client.getUser(token).then(res => res)
+
+        const sub = user.UserAttributes?.find(e => e.Name == "sub")
+
+        return {
+            sub: sub?.Value || null, error: null, challenge: null
+        }
     }
 
-    async getUser(req: NextApiRequest): Promise<AuthRes | null> {
-        var cookies = cookie.parse(req.headers.cookie || '');
+    async getUser(context: GetServerSidePropsContext): Promise<AuthRes | null> {
+        var cookies = cookie.parse(context.req.headers.cookie || '');
 
         // Get the visitor name set in the cookie
-        var name = cookies['test-token'];
+        var name = cookies['hospo-token'];
 
         const token: GetUserCommandInput = {
             AccessToken: name
