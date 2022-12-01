@@ -8,11 +8,9 @@ import {
     InitiateAuthCommandInput,
     SignUpCommandInput,
     ConfirmSignUpRequest,
-    SignUpCommandOutput,
     InitiateAuthCommandOutput,
     ConfirmSignUpCommandOutput,
-    GetUserCommandInput,
-    GetUserCommandOutput,
+    GetUserCommandInput
 } from '@aws-sdk/client-cognito-identity-provider'
 
 type AuthRes = {
