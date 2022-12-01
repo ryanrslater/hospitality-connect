@@ -5,8 +5,9 @@ import LoggedIn from '../ui/layouts/index/LoggedIn'
 import { GetServerSidePropsContext, NextPage } from 'next'
 import { Auth } from '../lib/Auth'
 import { PageProps } from '../types/PageProps'
+import { AccountStatus } from '@prisma/client'
 
-const Home: NextPage<PageProps> = ({ signedIn }) => {
+const Home: NextPage<PageProps> = ({ signedIn, status }) => {
   return (
     <div className={styles.container}>
       <Head>
@@ -29,7 +30,8 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   if (!user || !user.sub) {
     return {
       props: {
-        signedIn: false
+        signedIn: false,
+        status: null
       }
     }
   }
