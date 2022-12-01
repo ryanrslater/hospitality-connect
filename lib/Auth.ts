@@ -29,6 +29,8 @@ export class Auth {
 
     private clientId = process.env.COGNITO_CLIENT_ID
 
+    private tokenName = 'hospo-token'
+
     constructor() {
         if (!process.env.ACCESS_KEY_ID) throw Error('missing access key')
         if (!process.env.SECRET_ACCESS_KEY) throw Error('missing secret key')
@@ -45,7 +47,7 @@ export class Auth {
 
     async signIn(username: string | undefined, password: string | undefined, res: NextApiResponse): Promise<AuthRes> {
 
-        if (!username || !password) return {error: 'missing creds', sub: null, challenge: null}
+        if (!username || !password) return { error: 'missing creds', sub: null, challenge: null }
 
         const req: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
@@ -61,11 +63,11 @@ export class Auth {
         try {
             auth = await this.client.initiateAuth(req)
         } catch (e: any) {
-            if (e.code == "UserNotConfirmedException") return {error: null, sub: null, challenge: 'UserNotConfirmedException'}
-            return {error: e.code, sub: null, challenge: null}   
+            if (e.code == "UserNotConfirmedException") return { error: null, sub: null, challenge: 'UserNotConfirmedException' }
+            return { error: e.code, sub: null, challenge: null }
         }
 
-        if (!auth.AuthenticationResult?.AccessToken || !auth.AuthenticationResult.ExpiresIn) return {error: "No token", sub: null, challenge: null}
+        if (!auth.AuthenticationResult?.AccessToken || !auth.AuthenticationResult.ExpiresIn) return { error: "No token", sub: null, challenge: null }
 
 
         const date = new Date()
@@ -78,7 +80,7 @@ export class Auth {
             secure: process.env.VERCEL_ENV === 'production'
         }
 
-        res.setHeader('Set-Cookie', cookie.serialize('hospo-token', auth.AuthenticationResult.AccessToken, cookieOptions))
+        res.setHeader('Set-Cookie', cookie.serialize(this.tokenName, auth.AuthenticationResult.AccessToken, cookieOptions))
 
         const token: GetUserCommandInput = {
             AccessToken: auth.AuthenticationResult.AccessToken
@@ -96,8 +98,7 @@ export class Auth {
     async getUser(context: GetServerSidePropsContext): Promise<AuthRes | null> {
         var cookies = cookie.parse(context.req.headers.cookie || '');
 
-        // Get the visitor name set in the cookie
-        var name = cookies['hospo-token'];
+        var name = cookies[this.tokenName];
 
         const token: GetUserCommandInput = {
             AccessToken: name
@@ -131,7 +132,11 @@ export class Auth {
 
         if (!cognito.UserSub) throw Error()
 
-        return cognito
+        return {
+            sub: cognito.UserSub,
+            error: null,
+            challenge: 'UserNotConfirmedException'
+        }
     }
 
 
