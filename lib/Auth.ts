@@ -45,11 +45,11 @@ export class Auth {
         })
     }
 
-    async signIn(username: string | undefined, password: string | undefined, res: NextApiResponse): Promise<AuthRes> {
+    async signIn(username: string | undefined, password: string | undefined, req: NextApiRequest, res: NextApiResponse): Promise<AuthRes> {
 
         if (!username || !password) return { error: 'missing creds', sub: null, challenge: null }
 
-        const req: InitiateAuthCommandInput = {
+        const request: InitiateAuthCommandInput = {
             AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
             ClientId: this.clientId,
             AuthParameters: {
@@ -61,14 +61,13 @@ export class Auth {
         let auth: InitiateAuthCommandOutput
 
         try {
-            auth = await this.client.initiateAuth(req)
+            auth = await this.client.initiateAuth(request)
         } catch (e: any) {
             if (e.code == "UserNotConfirmedException") return { error: null, sub: null, challenge: 'UserNotConfirmedException' }
             return { error: e.code, sub: null, challenge: null }
         }
 
         if (!auth.AuthenticationResult?.AccessToken || !auth.AuthenticationResult.ExpiresIn) return { error: "No token", sub: null, challenge: null }
-
 
         const date = new Date()
 
@@ -96,16 +95,16 @@ export class Auth {
     }
 
     async getUser(context: GetServerSidePropsContext): Promise<AuthRes | null> {
-        var cookies = cookie.parse(context.req.headers.cookie || '');
+        const cookies = cookie.parse(context.req.headers.cookie || '');
 
-        var name = cookies[this.tokenName];
+        const name = cookies[this.tokenName];
 
         const token: GetUserCommandInput = {
             AccessToken: name
         }
 
         const user = await this.client.getUser(token).then(res => res)
-        console.log(user)
+     
         return null
     }
 
