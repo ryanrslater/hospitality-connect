@@ -26,6 +26,12 @@ enum AccountStatus {
   SUSPENDED
 }
 
+enum ConnectionRequest {
+  DENIED
+  ACCEPTED
+  PENDING
+}
+
 
 
 model Account {
@@ -42,9 +48,8 @@ model Account {
   email             String        @db.VarChar(225)
   ABN               String        @db.VarChar(225)
   accountType       AccountType
-  accountStatus     AccountStatus
+  accountStatus     AccountStatus @default(ACCOUNTCREATION)
   slug              String        @unique @db.VarChar(225)
-  likes             Like[]
   posts             Post[]
   connections       Connection[]
   @@index([accountId, slug])
@@ -57,7 +62,8 @@ model Connection {
   supplierId Int
   accounts   Account  @relation(fields: [vendorId], references: [id])
   vendorId   Int
-
+  suppierRequest ConnectionRequest @default(PENDING)
+  vendorReqeust ConnectionRequest @default(PENDING)
   @@index([vendorId, supplierId])
 }
 
@@ -65,8 +71,6 @@ model Like {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  accounts  Account  @relation(fields: [accountId], references: [id])
-  accountId Int
   post      Post     @relation(fields: [postId], references: [id])
   postId    Int
 }
