@@ -15,9 +15,11 @@ enum AccountType {
   ADMIN
   VENDOR
   SUPPLIER
+  UNKNOWN
 }
 
 enum AccountStatus {
+  CONFIRM
   ACCOUNTCREATION
   PENDING
   ACTIVE

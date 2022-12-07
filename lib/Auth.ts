@@ -151,7 +151,7 @@ export class Auth {
         }
 
         const cognito = await this.client.confirmSignUp(req).then(res => res)
-
+    
         if (!cognito) throw Error()
 
         return cognito
