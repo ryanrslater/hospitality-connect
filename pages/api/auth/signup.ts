@@ -11,7 +11,11 @@ export default async function handler(
     const body = JSON.parse(req.body)
 
     const user = await auth.signUp(body.username, body.email, body.password, body.confirmPassword)
+
+    if (!user.sub) return res.status(200).json({ error: 'John Doe' })
+    
     const account = await acc.create(body.username, user.sub, body.email,)
+
     res.status(200).json({ name: 'John Doe' })
     return res
 }
