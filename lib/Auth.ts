@@ -143,11 +143,13 @@ export class Auth {
     }
 
 
-    async confirmAccount(username: string, code: string): Promise<ConfirmSignUpCommandOutput> {
+    async confirmAccount(context: GetServerSidePropsContext): Promise<ConfirmSignUpCommandOutput> {
+        if (typeof context.query.username  != "string" || typeof context.query.code != "string") throw Error()
+        
         const req: ConfirmSignUpRequest = {
             ClientId: this.clientId,
-            Username: username,
-            ConfirmationCode: code
+            Username: context.query.username,
+            ConfirmationCode: context.query.code
         }
 
         const cognito = await this.client.confirmSignUp(req).then(res => res)
