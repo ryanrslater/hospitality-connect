@@ -10,7 +10,7 @@ export default async function handler(
     const acc = new Account()
     const body = JSON.parse(req.body)
 
-    const user = await auth.signUp(body.username, body.email, body.password, body.confirmPassword)
+    const user = await auth.confirmAccount(body.username, body.code)
 
     if (user.error) return res.status(400).json({ error: user.error })
 
