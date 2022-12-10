@@ -37,7 +37,7 @@ enum ConnectionRequest {
 
 model Account {
   id                Int           @id @default(autoincrement())
-  accountId         String        @db.VarChar(255)
+  accountId         String        @unique @db.VarChar(255)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   name              String        @db.VarChar(255)
@@ -48,7 +48,7 @@ model Account {
   paymentCustomerId String        @db.VarChar(225)
   email             String        @db.VarChar(225)
   ABN               String        @db.VarChar(225)
-  accountType       AccountType
+  accountType       AccountType   @default(UNKNOWN)
   accountStatus     AccountStatus @default(ACCOUNTCREATION)
   slug              String        @unique @db.VarChar(225)
   posts             Post[]

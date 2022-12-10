@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, AccountType, Account as acc } from "@prisma/client";
+import { PrismaClient, Prisma, AccountType, Account as acc, AccountStatus } from "@prisma/client";
 
 export class Account {
 
@@ -15,12 +15,24 @@ export class Account {
             paymentCustomerId: "",
             email,
             ABN: "",
-            accountType: AccountType.UNKNOWN,
             slug: sub
         }
         const user = await this.prisma.account.create({
             data
         })
         return user
+    }
+
+    async updateStatus(sub: string, status: AccountStatus) {
+    
+        const values: Prisma.AccountUpdateArgs = {
+            data: {
+                accountStatus: status
+            },
+            where: {
+                accountId: sub,
+            }
+        }
+        const user = await this.prisma.account.update(values)
     }
 }
