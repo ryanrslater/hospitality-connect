@@ -34,5 +34,6 @@ export class Account {
             }
         }
         const user = await this.prisma.account.update(values)
+        return user
     }
 }
