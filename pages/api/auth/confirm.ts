@@ -8,10 +8,11 @@ export default async function handler(
     const nextcognito = new NextCognito()
     const body = JSON.parse(req.body)
 
-    const user = await nextcognito.confirmSignUp(body.username, body.code)
+    try {
+        await nextcognito.confirmSignUp(body.username, body.code)
+        return res.status(200).json({ success: true })
+    } catch (err) {
+        return res.status(200).json({ error: err })
+    }
 
-
-
-    res.status(200).json({ success: true })
-    return res
 }

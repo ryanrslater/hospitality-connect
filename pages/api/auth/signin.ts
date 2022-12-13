@@ -13,8 +13,6 @@ export default async function handler(
   const auth = new NextCognito()
 
   const user = auth.signIn(body.username, body.password, res)
-
-
   
   res.status(200).json({ name: 'John Doe' })
   return res
